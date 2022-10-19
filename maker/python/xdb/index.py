@@ -13,12 +13,12 @@ BTree_Index_Policy = 2
 
 def index_policy_from_string(s: str) -> int:
     sl = s.lower()
-    if sl == "vector":
-        return Vector_Index_Policy
-    elif sl == "btree":
+    if sl == "btree":
         return BTree_Index_Policy
+    elif sl == "vector":
+        return Vector_Index_Policy
     else:
-        print("invalid policy `{}`, used default vector index".format(s))
+        print(f"invalid policy `{s}`, used default vector index")
         return Vector_Index_Policy
 
 
@@ -31,7 +31,7 @@ class VectorIndexBlock:
         self.last_ptr = lp
 
     def __str__(self):
-        return "FirstPtr: {}, LastPrt: {}".format(self.first_ptr, self.last_ptr)
+        return f"FirstPtr: {self.first_ptr}, LastPrt: {self.last_ptr}"
 
     def encode(self) -> bytes:
         return struct.pack("<II", self.first_ptr, self.last_ptr)

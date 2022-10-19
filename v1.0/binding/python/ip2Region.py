@@ -154,7 +154,7 @@ class Ip2Region(object):
         indexLen = eptr - sptr
         self.__f.seek(sptr)
         index = self.__f.read(indexLen + self.__INDEX_BLOCK_LENGTH)
-        
+
         l, h, dataPrt = (0, int(indexLen/self.__INDEX_BLOCK_LENGTH), 0)
         while l <= h:
             m = int((l+h) >> 1)
@@ -183,7 +183,7 @@ class Ip2Region(object):
         try:
             self.__f = io.open(dbfile, "rb")
         except IOError as e:
-            print("[Error]: %s" % e)
+            print(f"[Error]: {e}")
             sys.exit()
 
     def returnData(self, dataPtr):

@@ -18,9 +18,7 @@ class Segment:
         self.region = reg
 
     def __str__(self):
-        return "{}|{}|{}".format(
-            util.long2ip(self.start_ip), util.long2ip(self.end_ip), self.region
-        )
+        return f"{util.long2ip(self.start_ip)}|{util.long2ip(self.end_ip)}|{self.region}"
 
     def split(self) -> list:
         """

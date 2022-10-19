@@ -125,50 +125,38 @@ class Maker:
 
         lines = self.src_handle.read().splitlines()
         for line in lines:
-            logging.info("load segment: `{}`".format(line))
+            logging.info(f"load segment: `{line}`")
             ps = line.split("|", maxsplit=2)
             if len(ps) != 3:
-                logging.error("invalid ip segment line `{}`".format(line))
+                logging.error(f"invalid ip segment line `{line}`")
                 return []
             sip = util.check_ip(ps[0])
             if sip == -1:
-                logging.error(
-                    "invalid ip address `{}` in line `{}`".format(ps[0], line)
-                )
+                logging.error(f"invalid ip address `{ps[0]}` in line `{line}`")
                 return []
             eip = util.check_ip(ps[1])
             if eip == -1:
-                logging.error(
-                    "invalid ip address `{}` in line `{}`".format(ps[1], line)
-                )
+                logging.error(f"invalid ip address `{ps[1]}` in line `{line}`")
                 return []
             if sip > eip:
-                logging.error(
-                    "start ip({}) should not be greater than end ip({})".format(
-                        ps[0], ps[1]
-                    )
-                )
+                logging.error(f"start ip({ps[0]}) should not be greater than end ip({ps[1]})")
                 return []
             if len(ps[2]) < 1:
-                logging.error("empty region info in segment line `{}`".format(line))
+                logging.error(f"empty region info in segment line `{line}`")
                 return []
 
             segment = seg.Segment(sip=sip, eip=eip, reg=ps[2])
             # Check the continuity of data segment
-            if last is not None:
-                if last.end_ip + 1 != segment.start_ip:
-                    logging.error(
-                        "discontinuous data segment: last.eip+1({})!=seg.sip({}, {})".format(
-                            sip, eip, ps[0]
-                        )
-                    )
-                    return []
+            if last is not None and last.end_ip + 1 != segment.start_ip:
+                logging.error(
+                    f"discontinuous data segment: last.eip+1({sip})!=seg.sip({eip}, {ps[0]})"
+                )
+
+                return []
             self.segments.append(segment)
             last = segment
         logging.info(
-            "all segments loaded, length: {}, elapsed: {}".format(
-                len(self.segments), time.time() - s_tm
-            )
+            f"all segments loaded, length: {len(self.segments)}, elapsed: {time.time() - s_tm}"
         )
 
     def set_vector_index(self, ip, ptr):
@@ -179,9 +167,7 @@ class Maker:
         vi_block = self.vector_index[row][col]
         if vi_block.first_ptr == 0:
             vi_block.first_ptr = ptr
-            vi_block.last_ptr = ptr + idx.Segment_Index_Block_Size
-        else:
-            vi_block.last_ptr = ptr + idx.Segment_Index_Block_Size
+        vi_block.last_ptr = ptr + idx.Segment_Index_Block_Size
         self.vector_index[row][col] = vi_block
 
     def start(self):
@@ -197,42 +183,37 @@ class Maker:
 
         logging.info("try to write the data block ... ")
         for s in self.segments:
-            logging.info("try to write region '{}'...".format(s.region))
+            logging.info(f"try to write region '{s.region}'...")
             if s.region in self.region_pool:
-                logging.info(
-                    " --[Cached] with ptr={}".format(self.region_pool[s.region])
-                )
+                logging.info(f" --[Cached] with ptr={self.region_pool[s.region]}")
                 continue
             region = bytes(s.region, encoding="utf-8")
             if len(region) > 0xFFFF:
                 logging.error(
-                    "too long region info `{}`: should be less than {} bytes".format(
-                        s.region, 0xFFFF
-                    )
+                    f"too long region info `{s.region}`: should be less than 65535 bytes"
                 )
+
                 return
             # Get the first ptr of the next region
             pos = self.dst_handle.seek(0, 1)
-            logging.info("{} {} {}".format(pos, region, s.region))
+            logging.info(f"{pos} {region} {s.region}")
             self.dst_handle.write(region)
             self.region_pool[s.region] = pos
-            logging.info(" --[Added] with ptr={}".format(pos))
+            logging.info(f" --[Added] with ptr={pos}")
         # 2. Write the index block and cache the super index block
         logging.info("try to write the segment index block ... ")
         counter, start_index_ptr, end_index_ptr = 0, -1, -1
         for sg in self.segments:
             if sg.region not in self.region_pool:
-                logging.error("missing ptr cache for region `{}`".format(sg.region))
+                logging.error(f"missing ptr cache for region `{sg.region}`")
                 return
             data_len = len(bytes(sg.region, encoding="utf-8"))
             if data_len < 1:
-                logging.error("empty region info for segment '{}'".format(sg.region))
+                logging.error(f"empty region info for segment '{sg.region}'")
                 return
 
             seg_list = sg.split()
-            logging.info(
-                "try to index segment({} split) {} ...".format(len(seg_list), sg)
-            )
+            logging.info(f"try to index segment({len(seg_list)} split) {sg} ...")
             for s in seg_list:
                 pos = self.dst_handle.seek(0, 1)
 
@@ -243,9 +224,7 @@ class Maker:
                     dp=self.region_pool[sg.region],
                 )
                 self.dst_handle.write(s_index.encode())
-                logging.info(
-                    "|-segment index: {}, ptr: {}, segment: {}".format(counter, pos, s)
-                )
+                logging.info(f"|-segment index: {counter}, ptr: {pos}, segment: {s}")
                 self.set_vector_index(s.start_ip, pos)
                 counter += 1
 
@@ -257,8 +236,8 @@ class Maker:
         # 3. Synchronized the vector index block
         logging.info("try to write the vector index block ... ")
         self.dst_handle.seek(Header_Info_Length, 0)
-        for i in range(0, len(self.vector_index)):
-            for j in range(0, len(self.vector_index[i])):
+        for i in range(len(self.vector_index)):
+            for j in range(len(self.vector_index[i])):
                 vi = self.vector_index[i][j]
                 self.dst_handle.write(vi.encode())
 
@@ -269,13 +248,7 @@ class Maker:
         self.dst_handle.write(buff)
 
         logging.info(
-            "write done, dataBlocks: {}, indexBlocks: ({}, {}), indexPtr: ({}, {})".format(
-                len(self.region_pool),
-                len(self.segments),
-                counter,
-                start_index_ptr,
-                end_index_ptr,
-            )
+            f"write done, dataBlocks: {len(self.region_pool)}, indexBlocks: ({len(self.segments)}, {counter}), indexPtr: ({start_index_ptr}, {end_index_ptr})"
         )
 
     def end(self):
