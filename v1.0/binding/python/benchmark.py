@@ -31,15 +31,12 @@ class BenchmarkThread(threading.Thread):
             self.__lock.release()
 
 if __name__ == "__main__":
-    dbFile = "./data/ip2region.db"
-    if ( len(sys.argv) > 2 ):
-        dbFile = sys.argv[1];
-
+    dbFile = sys.argv[1] if ( len(sys.argv) > 2 ) else "./data/ip2region.db"
     threads = []
     searcher = Ip2Region(dbFile)
     lock = threading.Lock()
 
-    for i in range(10000):
+    for _ in range(10000):
         t = BenchmarkThread(searcher, lock)
         threads.append(t)
 

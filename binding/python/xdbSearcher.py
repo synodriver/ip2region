@@ -38,7 +38,7 @@ class XdbSearcher(object):
             f.close()
             return vector_data
         except IOError as e:
-            print("[Error]: %s" % e)
+            print(f"[Error]: {e}")
 
     @staticmethod
     def loadContentFromFile(dbfile):
@@ -48,17 +48,15 @@ class XdbSearcher(object):
             f.close()
             return all_data
         except IOError as e:
-            print("[Error]: %s" % e)
+            print(f"[Error]: {e}")
 
     def __init__(self, dbfile=None, vectorIndex=None, contentBuff=None):
         self.initDatabase(dbfile, vectorIndex, contentBuff)
 
     def search(self, ip):
-        if isinstance(ip, str):
-            if not ip.isdigit(): ip = self.ip2long(ip)
-            return self.searchByIPLong(ip)
-        else:
-            return self.searchByIPLong(ip)
+        if isinstance(ip, str) and not ip.isdigit():
+            ip = self.ip2long(ip)
+        return self.searchByIPLong(ip)
        
     def searchByIPStr(self, ip):
         if not ip.isdigit(): ip = self.ip2long(ip)
@@ -84,8 +82,8 @@ class XdbSearcher(object):
             ePtr = self.getLong(buffer_ptr, 4)
 
         # binary search the segment index block to get the region info
-        dataLen = dataPtr = int(-1)
-        l = int(0)
+        dataLen = dataPtr = -1
+        l = 0
         h = int((ePtr - sPtr) / SegmentIndexSize)
         while l <= h:
             m = int((l + h) >> 1)
@@ -109,8 +107,7 @@ class XdbSearcher(object):
             return ""
 
         buffer_string = self.readBuffer(dataPtr, dataLen)
-        return_string = buffer_string.decode("utf-8")
-        return return_string
+        return buffer_string.decode("utf-8")
 
     def readBuffer(self, offset, length):
         buffer = None
@@ -139,7 +136,7 @@ class XdbSearcher(object):
                 self.__f = io.open(dbfile, "rb")
                 self.vectorIndex = vi
         except IOError as e:
-            print("[Error]: %s" % e)
+            print(f"[Error]: {e}")
             sys.exit()
 
     def ip2long(self, ip):
@@ -179,10 +176,10 @@ if __name__ == '__main__':
     # 1. 缓存
     dbPath = "./data/ip2region.xdb";
     cb = XdbSearcher.loadContentFromFile(dbfile=dbPath)
-    
+
     # 2. 创建查询对象
     searcher = XdbSearcher(contentBuff=cb)
-    
+
     # 3. 执行查询
     # ip = "1.2.3.4"
     for ip in ip_array:

@@ -30,9 +30,7 @@ def long2ip(num: int) -> str:
     """
     if num < 0 or num > 0xFFFFFFFF:
         return ""
-    return "{}.{}.{}.{}".format(
-        (num >> 24) & 0xFF, (num >> 16) & 0xFF, (num >> 8) & 0xFF, num & 0xFF
-    )
+    return f"{num >> 24 & 255}.{num >> 16 & 255}.{num >> 8 & 255}.{num & 255}"
 
 
 def is_ipv4(ip: str) -> bool:
@@ -42,7 +40,7 @@ def is_ipv4(ip: str) -> bool:
     ps = ip.split(".")
     if len(ps) != 4:
         return False
-    for p in ps:
-        if not p.isdigit() or len(p) > 3 or (int(p) < 0 or int(p) > 255):
-            return False
-    return True
+    return not any(
+        not p.isdigit() or len(p) > 3 or (int(p) < 0 or int(p) > 255)
+        for p in ps
+    )

@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 def print_help():
     print("ip2region xdb python maker")
-    print("{} [command] [command options]".format(sys.argv[0]))
+    print(f"{sys.argv[0]} [command] [command options]")
     print("Command: ")
     print("  gen      generate the binary db file")
 
@@ -39,7 +39,7 @@ def gen_db():
             continue
         s_idx = r.index("=")
         if s_idx < 0:
-            print("missing = for args pair '{}'".format(r))
+            print(f"missing = for args pair '{r}'")
             return
         if r[2:s_idx] == "src":
             src_file = r[s_idx + 1:]
@@ -48,10 +48,10 @@ def gen_db():
         elif r[2:s_idx] == "index":
             index_policy = idx.index_policy_from_string(r[s_idx + 1:])
         else:
-            print("undefined option `{}`".format(r))
+            print(f"undefined option `{r}`")
             return
     if src_file == "" or dst_file == "":
-        print("{} gen [command options]".format(sys.argv[0]))
+        print(f"{sys.argv[0]} gen [command options]")
         print("options:")
         print(" --src string    source ip text file path")
         print(" --dst string    destination binary xdb file path")

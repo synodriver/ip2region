@@ -67,20 +67,20 @@ def start_bench(dbFile="", srcFile="", cachePolicy="vectorIndex"):
             line = trim(f.readline(1024)).decode("utf-8").replace("\n", "")
             if len(line) < 1:
                 break
-            
+
             ps = line.split("|",2)
             if len(ps) != 3:
                 print(f"invalid ip segment line :{line}")
                 return
             sip = XdbSearcher.ip2long(None, ps[0])
             eip = XdbSearcher.ip2long(None, ps[1])
-            
+
             if sip > eip:
                 print(f"start ip({ps[0]}) should not be greater than end ip({ps[1]})")
                 return
-            
+
             mip = (sip + eip) >> 1
-            
+
             for ip in [sip, (sip + mip) >> 1, mip, (mip + eip) >> 1, eip]:
                 try:
                     cTime = time.time()
@@ -97,7 +97,7 @@ def start_bench(dbFile="", srcFile="", cachePolicy="vectorIndex"):
                     print(f"failed search({ip}) with ({region} != {ps[2]})")
                     return
                 count = count + 1
-                
+
         # close the searcher at last
         f.close()
         searcher.close()

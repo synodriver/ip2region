@@ -20,7 +20,7 @@ def testSearch():
 
     if argLen < 2:
         print("Usage: python testSearcher.py [ip2region db file] [alrogrithm]")
-        print("Algorithm: %s" % ", ".join(algorithms))
+        print(f'Algorithm: {", ".join(algorithms)}')
         return 0
 
     dbFile = sys.argv[1]
@@ -36,7 +36,7 @@ def testSearch():
     except Exception as e:
         algorithm = "b-tree"
 
-    print("initializing %s..." % (algorithm))
+    print(f"initializing {algorithm}...")
     print("+----------------------------------+")
     print("| ip2region test program           |")
     print("| Author: chenxin619315@gmail.com. |")
@@ -75,7 +75,7 @@ def testSearch():
             eTime = time.time()*1000
             print("%s|%s in %5f millseconds" % (data["city_id"], data["region"].decode('utf-8'), eTime - sTime))
         except Exception as e:
-            print("[Error]: %s" % e)
+            print(f"[Error]: {e}")
 
     searcher.close()
 
